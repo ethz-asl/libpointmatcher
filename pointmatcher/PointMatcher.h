@@ -91,6 +91,14 @@ namespace PointMatcherSupport
 		//! return an exception when a transformation has invalid parameters
 		TransformationError(const std::string& reason);
 	};
+
+	//! An expception thrown when the yaml config file contains invalid configuration (e.g., mutually exclusive settings)
+	struct ConfigurationError: std::runtime_error
+	{
+		//! return an exception when a transformation has invalid parameters
+		ConfigurationError(const std::string& reason);
+	};
+
 	
 	//! The logger interface, used to output warnings and informations
 	struct Logger: public Parametrizable

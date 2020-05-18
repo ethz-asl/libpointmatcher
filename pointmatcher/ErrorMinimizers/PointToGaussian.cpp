@@ -56,9 +56,30 @@ typedef Parametrizable::ParametersDoc ParametersDoc;
 template<typename T>
 PointToGaussianErrorMinimizer<T>::PointToGaussianErrorMinimizer(const Parameters& params):
 	PointToPlaneErrorMinimizer<T>(PointToGaussianErrorMinimizer::availableParameters(), params),
-	confidenceInPenalties(Parametrizable::get<T>("confidenceInPenalties")),
-	force2D(Parametrizable::get<bool>("force2D"))
+	//confidenceInPenalties(Parametrizable::get<T>("confidenceInPenalties")),
+	force2D(Parametrizable::get<bool>("force2D")),
+    force4DOF(Parametrizable::get<T>("force4DOF")),
+    noiseSensor(Parametrizable::get<float>("noiseSensor"))
 {
+	if(force2D)
+	{
+		if (force4DOF)
+		{
+			throw PointMatcherSupport::ConfigurationError("Force 2D cannot be used together with force4DOF.");
+		}
+		else
+		{
+			LOG_INFO_STREAM("PointMatcher::PointToGaussianErrorMinimizer - minimization will be in 2D.");
+		}
+	}
+	else if(force4DOF)
+	{
+		LOG_INFO_STREAM("PointMatcher::PointToGaussianErrorMinimizer - minimization will be in 4-DOF (yaw,x,y,z).");
+	}
+	else
+	{
+		LOG_INFO_STREAM("PointMatcher::PointToGaussianErrorMinimizer - minimization will be in full 6DOF.");
+	}
 }
 
 template<typename T>
@@ -97,21 +118,23 @@ typename PointToGaussianErrorMinimizer<T>::ErrorElements PointToGaussianErrorMin
 	ConstView eigVectors = mPts_const.reference.getDescriptorViewByName("eigVectors");
 	ConstView eigValues = mPts_const.reference.getDescriptorViewByName("eigValues");
 
-	if ((eigValues.array() < 0.0).any()) {
-		throw ConvergenceError("PointToGaussian(): Some of the eigen values are negative.");
-	}
-	for (long i = 0; i < mPts_const.reference.features.cols(); ++i) {
-		mPts.reading.features.block(0, dim * i, dim + 1, dim) = mPts_const.reading.features.col(i).replicate(1, dim);
-		mPts.reference.features.block(0, dim * i, dim + 1, dim) = mPts_const.reference.features.col(i).replicate(1, dim);
+    if ((eigValues.array() < -noiseSensor*noiseSensor).any()) {
+        throw ConvergenceError("PointToGaussian(): Some of the eigen values are negative.");
+    }
 
-		// Convert a vector into a matrix
-		const Matrix matEigVectors = Eigen::Map<const Matrix>(eigVectors.col(i).data(), dim, dim);
-		normals.block(0, dim * i, dim, dim) = matEigVectors;
+    for (long i = 0; i < mPts_const.reference.features.cols(); ++i) {
+        mPts.reading.features.block(0, dim * i, dim + 1, dim) = mPts_const.reading.features.col(i).replicate(1, dim);
+        mPts.reference.features.block(0, dim * i, dim + 1, dim) = mPts_const.reference.features.col(i).replicate(1, dim);
 
-		// A eigen value of zero will have infinite weight.
-		assert((eigValues.col(i).array() != 0.0).any());
-		mPts.weights.block(0, dim * i, 1, dim) = eigValues.col(i).array().inverse().transpose();
-	}
+        // Convert a vector into a matrix
+        const Matrix matEigVectors = Eigen::Map<const Matrix>(eigVectors.col(i).data(), dim, dim);
+
+        normals.block(0, dim * i, dim, dim) = matEigVectors.transpose();
+
+        // A eigen value of zero will have infinite weight, that's why we add a noise constant for the weight
+        // Same solution as Bosse did with his Zebedee platefrom
+        mPts.weights.block(0, dim * i, 1, dim) = (pow(eigValues.col(i).array()+noiseSensor*noiseSensor,1/2)).inverse().transpose();
+    }
 
 	return mPts;
 }

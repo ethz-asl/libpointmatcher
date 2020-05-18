@@ -41,7 +41,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 template<typename T>
 PointMatcher<T>::ConvergenceError::ConvergenceError(const std::string& reason):
 	runtime_error(reason)
-{} 
+{}
+
+PointMatcherSupport::ConfigurationError::ConfigurationError(const std::string& reason):
+	runtime_error(reason)
+{}
 
 template struct PointMatcher<float>::ConvergenceError;
 template struct PointMatcher<double>::ConvergenceError;

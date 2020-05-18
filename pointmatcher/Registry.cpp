@@ -89,7 +89,9 @@ PointMatcher<T>::PointMatcher()
 	ADD_TO_REGISTRAR(DataPointsFilter, CovarianceSamplingDataPointsFilter, typename DataPointsFiltersImpl<T>::CovarianceSamplingDataPointsFilter)
 	ADD_TO_REGISTRAR(DataPointsFilter, DistanceLimitDataPointsFilter, typename DataPointsFiltersImpl<T>::DistanceLimitDataPointsFilter)
 	ADD_TO_REGISTRAR(DataPointsFilter, RemoveSensorBiasDataPointsFilter, typename DataPointsFiltersImpl<T>::RemoveSensorBiasDataPointsFilter)
-	
+
+
+
 	ADD_TO_REGISTRAR_NO_PARAM(Matcher, NullMatcher, typename MatchersImpl<T>::NullMatcher)
 	ADD_TO_REGISTRAR(Matcher, KDTreeMatcher, typename MatchersImpl<T>::KDTreeMatcher)
 	ADD_TO_REGISTRAR(Matcher, KDTreeVarDistMatcher, typename MatchersImpl<T>::KDTreeVarDistMatcher)
