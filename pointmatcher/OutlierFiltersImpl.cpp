@@ -261,7 +261,7 @@ typename PointMatcher<T>::OutlierWeights OutlierFiltersImpl<T>::SurfaceNormalOut
 
 				const Vector normalRef = normalsReference.col(idRef).normalized();
 
-				const T value = anyabs(normalRead.dot(normalRef));
+				const T value = normalRead.dot(normalRef);
 
 				if(value < eps) // test to keep the points
 					w(y, x) = 0;
