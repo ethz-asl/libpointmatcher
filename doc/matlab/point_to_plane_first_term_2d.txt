@@ -1,0 +1,44 @@
+
+d2J_dx2 =
+ 
+2*nix^2
+ 
+ 
+d2J_dy2 =
+ 
+2*niy^2
+ 
+ 
+d2J_dydx =
+ 
+2*nix*niy
+ 
+ 
+d2J_dxdy =
+ 
+2*nix*niy
+ 
+ 
+d2J_da2 =
+ 
+(2*nix*(pix*cos(a) - piy*sin(a)) + 2*niy*(piy*cos(a) + pix*sin(a)))*(nix*(qix - x - pix*cos(a) + piy*sin(a)) - niy*(y - qiy + piy*cos(a) + pix*sin(a))) + (nix*(piy*cos(a) + pix*sin(a)) - niy*(pix*cos(a) - piy*sin(a)))*(2*nix*(piy*cos(a) + pix*sin(a)) - 2*niy*(pix*cos(a) - piy*sin(a)))
+ 
+ 
+d2J_dxda =
+ 
+-nix*(2*nix*(piy*cos(a) + pix*sin(a)) - 2*niy*(pix*cos(a) - piy*sin(a)))
+ 
+ 
+d2J_dadx =
+ 
+-2*nix*(nix*(piy*cos(a) + pix*sin(a)) - niy*(pix*cos(a) - piy*sin(a)))
+ 
+ 
+d2J_dyda =
+ 
+-niy*(2*nix*(piy*cos(a) + pix*sin(a)) - 2*niy*(pix*cos(a) - piy*sin(a)))
+ 
+ 
+d2J_dady =
+ 
+-2*niy*(nix*(piy*cos(a) + pix*sin(a)) - niy*(pix*cos(a) - piy*sin(a)))

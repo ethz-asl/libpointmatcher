@@ -1,0 +1,59 @@
+ 
+d2J_dpix_dx =
+ 
+2*nix*(nix*cos(a) + niy*sin(a))
+ 
+ 
+d2J_dpix_dy =
+ 
+2*niy*(nix*cos(a) + niy*sin(a))
+ 
+ 
+d2J_dpix_da =
+ 
+- (2*nix*(piy*cos(a) + pix*sin(a)) - 2*niy*(pix*cos(a) - piy*sin(a)))*(nix*cos(a) + niy*sin(a)) - (2*niy*cos(a) - 2*nix*sin(a))*(nix*(qix - x - pix*cos(a) + piy*sin(a)) - niy*(y - qiy + piy*cos(a) + pix*sin(a)))
+ 
+ 
+d2J_dpiy_dx =
+ 
+2*nix*(niy*cos(a) - nix*sin(a))
+ 
+ 
+d2J_dpiy_dy =
+ 
+2*niy*(niy*cos(a) - nix*sin(a))
+ 
+ 
+d2J_dpiy_da =
+ 
+(2*nix*cos(a) + 2*niy*sin(a))*(nix*(qix - x - pix*cos(a) + piy*sin(a)) - niy*(y - qiy + piy*cos(a) + pix*sin(a))) - (2*nix*(piy*cos(a) + pix*sin(a)) - 2*niy*(pix*cos(a) - piy*sin(a)))*(niy*cos(a) - nix*sin(a))
+ 
+ 
+d2J_dqix_dx =
+ 
+-2*nix^2
+ 
+ 
+d2J_dqix_dy =
+ 
+-2*nix*niy
+ 
+ 
+d2J_dqix_da =
+ 
+nix*(2*nix*(piy*cos(a) + pix*sin(a)) - 2*niy*(pix*cos(a) - piy*sin(a)))
+ 
+ 
+d2J_dqiy_dx =
+ 
+-2*nix*niy
+ 
+ 
+d2J_dqiy_dy =
+ 
+-2*niy^2
+ 
+ 
+d2J_dqiy_da =
+ 
+niy*(2*nix*(piy*cos(a) + pix*sin(a)) - 2*niy*(pix*cos(a) - piy*sin(a)))
