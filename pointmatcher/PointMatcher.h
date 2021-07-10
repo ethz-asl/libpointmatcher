@@ -615,42 +615,50 @@ struct PointMatcher
 	};
 	typedef typename TransformationCheckers::iterator TransformationCheckersIt; //!< alias
 	typedef typename TransformationCheckers::const_iterator TransformationCheckersConstIt; //!< alias
-	
+
 	DEF_REGISTRAR(TransformationChecker)
 
 	// ---------------------------------
-	
+
 	//! An inspector allows to log data at the different steps, for analysis.
 	struct Inspector: public Parametrizable
 	{
-		
+
 		Inspector();
 		Inspector(const std::string& className, const ParametersDoc paramsDoc, const Parameters& params);
-		
-		// 
+
+		//
 		virtual ~Inspector();
 		virtual void init();
-		
+
 		// performance statistics
 		virtual void addStat(const std::string& name, double data);
 		virtual void dumpStats(std::ostream& stream);
 		virtual void dumpStatsHeader(std::ostream& stream);
-		
-		// data statistics 
+
+		// data statistics
 		virtual void dumpIteration(const size_t iterationNumber, const TransformationParameters& parameters, const DataPoints& filteredReference, const DataPoints& reading, const Matches& matches, const OutlierWeights& outlierWeights, const TransformationCheckers& transformationCheckers);
 		virtual void finish(const size_t iterationCount);
+
+		virtual void setAndValidateDumpPath(std::string path);
+		virtual std::string getDumpPath() const;
+
+		virtual void resetIsFirstIter() {}
+
+	protected:
+		std::string dumpPath;
 	};
-	
-	DEF_REGISTRAR(Inspector) 
-	
+
+	DEF_REGISTRAR(Inspector)
+
 	// ---------------------------------
-	
+
 	DEF_REGISTRAR_IFACE(Logger, PointMatcherSupport::Logger)
 
 	// ---------------------------------
-	
+
 	// algorithms
-	
+
 	//! Stuff common to all ICP algorithms
 	struct ICPChainBase
 	{

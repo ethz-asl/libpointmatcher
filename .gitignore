@@ -3,5 +3,6 @@
 *~
 *.swp
 *.cur_trans
+*.vtk
 build
 .ipynb_checkpoints/

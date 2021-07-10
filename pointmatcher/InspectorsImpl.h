@@ -120,6 +120,8 @@ struct InspectorsImpl
 		const bool bDumpDataLinks;
 		const bool bDumpReading;
 		const bool bDumpReference;
+		const bool bDumpReferenceOnlyFirstIter;
+		bool isFirstIter;
 		const bool bWriteBinary;
 
 	public:
@@ -129,6 +131,8 @@ struct InspectorsImpl
 		virtual void dumpMeshNodes(const DataPoints& cloud, const std::string& name);
 		virtual void dumpIteration(const size_t iterationNumber, const TransformationParameters& parameters, const DataPoints& filteredReference, const DataPoints& reading, const Matches& matches, const OutlierWeights& outlierWeights, const TransformationCheckers& transformationCheckers);
 		virtual void finish(const size_t iterationCount);
+
+		virtual void resetIsFirstIter() { isFirstIter = true; }
 
 	private:
 		void buildGenericAttributeStream(std::ostream& stream, const std::string& attribute, const std::string& nameTag, const DataPoints& cloud, const int forcedDim);
@@ -171,7 +175,8 @@ struct InspectorsImpl
 				{"dumpDataLinks", "dump data links at each iteration", "0" },
 				{"dumpReading", "dump the reading cloud at each iteration", "0"},
 				{"dumpReference", "dump the reference cloud at each iteration", "0"},
-				{"writeBinary", "write binary VTK files", "0"}
+				{"writeBinary", "write binary VTK files", "0"},
+				{"dumpReferenceOnlyFirstIter", "dump the reference cloud only for the first iteration", "0"}
 			};
 		}
 		

@@ -74,7 +74,7 @@ void InspectorsImpl<T>::PerformanceInspector::addStat(const std::string& name, d
 	HistogramMap::iterator it(stats.find(name));
 	if (it == stats.end()) {
 		LOG_INFO_STREAM("Adding new stat: " << name);
-		it = stats.insert(HistogramMap::value_type(name, Histogram(16, name, baseFileName, bDumpPerfOnExit))).first;
+		it = stats.insert(HistogramMap::value_type(name, Histogram(16, name, this->dumpPath + baseFileName, bDumpPerfOnExit))).first;
 	}
 	it->second.push_back(data);
 }
@@ -142,7 +142,9 @@ InspectorsImpl<T>::AbstractVTKInspector::AbstractVTKInspector(const std::string&
 	bDumpDataLinks(Parametrizable::get<bool>("dumpDataLinks")),
 	bDumpReading(Parametrizable::get<bool>("dumpReading")),
 	bDumpReference(Parametrizable::get<bool>("dumpReference")),
-	bWriteBinary(Parametrizable::get<bool>("writeBinary"))
+	bWriteBinary(Parametrizable::get<bool>("writeBinary")),
+	bDumpReferenceOnlyFirstIter(Parametrizable::get<bool>("dumpReferenceOnlyFirstIter")),
+	isFirstIter(true)
 {
 }
 
@@ -404,12 +406,15 @@ void InspectorsImpl<T>::AbstractVTKInspector::dumpIteration(
 		closeStream(streamRead);
 	}
 	
-	if (bDumpReference){
+	if (bDumpReference &&
+		((bDumpReferenceOnlyFirstIter && isFirstIter) || !bDumpReferenceOnlyFirstIter)
+	){
+		isFirstIter = false;
 		ostream* streamRef(openStream("reference", iterationNumber));
 		dumpDataPoints(filteredReference, *streamRef);
 		closeStream(streamRef);
 	}
-        
+
 	if (!bDumpIterationInfo) return;
 
 	// streamIter must be define by children
@@ -727,16 +732,16 @@ void InspectorsImpl<T>::VTKFileInspector::init()
 {
 
 	if (!bDumpIterationInfo) return;
- 
+
 	ostringstream oss;
 	oss << baseFileName << "-iterationInfo.csv";
 	//std::cerr << "writing to " << oss.str() << std::endl;
 	LOG_INFO_STREAM("writing to " << oss.str());
 
-	this->streamIter = new ofstream(oss.str().c_str());
+	this->streamIter = new ofstream(this->dumpPath + oss.str().c_str());
 	if (this->streamIter->fail())
 		throw std::runtime_error("Couldn't open the file \"" + oss.str() + "\". Check if directory exist.");
-	
+
 }
 
 template<typename T>
@@ -761,7 +766,7 @@ std::ostream* InspectorsImpl<T>::VTKFileInspector::openStream(const std::string&
 
 	//std::cerr << "writing to " << oss.str() << std::endl;
 	LOG_INFO_STREAM("writing to " << oss.str());
-	ofstream* file = new ofstream(oss.str().c_str(), std::ios::binary);
+	ofstream* file = new ofstream(this->dumpPath + oss.str().c_str(), std::ios::binary);
 	if (file->fail())
 		throw std::runtime_error("Couldn't open the file \"" + oss.str() + "\". Check if directory exist.");
 	return file;
@@ -772,7 +777,9 @@ std::ostream* InspectorsImpl<T>::VTKFileInspector::openStream(const std::string&
 {
 	ostringstream oss;
 	oss << baseFileName << "-" << role << "-" << iterationNumber << ".vtk";
-	ofstream* file = new ofstream(oss.str().c_str());
+
+	LOG_INFO_STREAM("writing to " << oss.str());
+	ofstream* file = new ofstream(this->dumpPath + oss.str().c_str());
 	if (file->fail())
 		throw std::runtime_error("Couldn't open the file \"" + oss.str() + "\". Check if directory exist.");
 	return file;
