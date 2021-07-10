@@ -108,7 +108,7 @@ endforeach()
 # initially
 set(EXTERNAL_LIBS "")
 
-# compile local version of gtest and yaml-cpp
+# compile local version of gtest
 add_subdirectory(contrib)
 
 #---------------------------
@@ -206,40 +206,18 @@ endif()
 
 
 #--------------------
-# DEPENDENCY: yaml-cpp (local or system, optional)
+# DEPENDENCY: yaml-cpp
 #--------------------
-option(USE_SYSTEM_YAML_CPP "Use system version of yaml-cpp rather than one packaged with libpointmatcher" FALSE)
 
-if(USE_SYSTEM_YAML_CPP)
-    message(STATUS "Looking for yaml-cpp on system")
-    find_path(yaml-cpp_INCLUDE_DIRS yaml-cpp/yaml.h
-            /usr/local/include
-    )
-    find_library(yaml-cpp_LIBRARIES yaml-cpp PATHS
-            /usr/local/lib
-    )
-    if(yaml-cpp_INCLUDE_DIRS AND yaml-cpp_LIBRARIES)
-            set(yamlcpp_FOUND)
-            message("-- yaml-cpp found, text-based configuration enabled")
-    else()
-            message("-- yaml-cpp not found, text-based configuration and related applications disabled")
-    endif()
+message(STATUS "Looking for yaml-cpp on system...")
+
+find_package(yaml-cpp QUIET)
+
+if(yaml-cpp_FOUND)
+        message(STATUS "yaml-cpp version ${yaml-cpp_VERSION} found, text-based configuration enabled")
 else()
-        include_directories(contrib/yaml-cpp-pm/include)
-
-#note: this is not working....
-        #get_property(yaml-cpp-pm_INCLUDE TARGET yaml-cpp-pm PROPERTY INCLUDE_DIRECTORIES)
-        #include_directories(${yaml-cpp-pm_INCLUDE})
-
-        list(APPEND EXTERNAL_LIBS $<TARGET_FILE:yaml-cpp-pm>)
-        list(APPEND EXTRA_DEPS yaml-cpp-pm)
-        set(yamlcpp_FOUND)
-
-        get_property(yaml-cpp-pm_VERSION TARGET yaml-cpp-pm PROPERTY VERSION)
-        message("-- using built-in yaml-cpp, version ${yaml-cpp-pm_VERSION}")
-        message("   -- text-based configuration enabled")
+        message(STATUS "yaml-cpp not found, text-based configuration and related applications disabled")
 endif()
-
 
 #--------------------
 # DEPENDENCY: rt (optional)
@@ -382,13 +360,9 @@ if (NOT MSVC)
 	target_compile_options(pointmatcher PRIVATE -Wall)
 endif()
 
-if(yaml-cpp_INCLUDE_DIRS AND yaml-cpp_LIBRARIES)
-	target_link_libraries(pointmatcher PRIVATE ${yaml-cpp_LIBRARIES})
-	target_include_directories(pointmatcher PRIVATE ${yaml-cpp_INCLUDE_DIRS})
-else() # embedded version:
-	# This could be enabled if yaml-cpp-pm was in the "export set"
-	#target_link_libraries(pointmatcher PRIVATE yaml-cpp-pm)
-	# For now, let's add yaml-cpp-pm output to EXTERNAL_LIBS
+if(yaml-cpp_FOUND)
+	target_link_libraries(pointmatcher PRIVATE ${YAML_CPP_LIBRARIES})
+	target_include_directories(pointmatcher PRIVATE ${YAML_CPP_INCLUDE_DIR})
 endif()
 
 target_link_libraries(pointmatcher PUBLIC ${Boost_LIBRARIES})
@@ -527,7 +501,7 @@ set(CONF_INCLUDE_DIRS ${INSTALL_INCLUDE_DIR} ${CONF_INCLUDE_DIRS} )
 #FIXME: this will only be applied to installed files. Confirm that we want that.
 # gather all the includes but remove ones in the source tree
 # because we added an include for the local yaml-cpp-pm we should also remove it
-list(REMOVE_ITEM CONF_INCLUDE_DIRS ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/contrib/yaml-cpp-pm/include)
+list(REMOVE_ITEM CONF_INCLUDE_DIRS ${CMAKE_SOURCE_DIR})
 
 # We put the generated file for installation in a different repository (i.e., ./CMakeFiles/)
 configure_file(libpointmatcherConfig.cmake.in
