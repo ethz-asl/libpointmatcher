@@ -395,7 +395,12 @@ OutlierFiltersImpl<T>::RobustOutlierFilter::robustFcts = {
 	{"tukey",   RobustFctId::Tukey},
 	{"huber",   RobustFctId::Huber},
 	{"L1",      RobustFctId::L1},
-	{"student", RobustFctId::Student}
+	{"student", RobustFctId::Student},
+	{"sparseicp", RobustFctId::SparseICP},
+	{"fair", RobustFctId::Fair},
+	{"logistic", RobustFctId::Logistic},
+	{"andrew", RobustFctId::Andrew},
+	{"emicp", RobustFctId::EMICP}
 };
 
 template<typename T>
@@ -586,6 +591,23 @@ typename PointMatcher<T>::OutlierWeights OutlierFiltersImpl<T>::RobustOutlierFil
 			w = p * (k + d) * (k + e2).inverse();
 			break;
 		}
+		case RobustFctId::SparseICP:
+			w = (k)* e2.sqrt().pow(k-2);
+			break;
+		case RobustFctId::Fair:
+			w = (1 + e2.sqrt()/k).inverse();
+			break;
+		case RobustFctId::Logistic:
+			w = (((e2.sqrt()/k).exp()-(-e2.sqrt()/k).exp())*k)*((((e2.sqrt()/k).exp()+(-e2.sqrt()/k).exp())*e2.sqrt()).inverse());
+			break;
+		case RobustFctId::Andrew:
+			belowThres = (k/(e2.sqrt()))*(e2.sqrt()/k);
+			w = (e2.sqrt() >= k*3.14).select(0.0, belowThres);
+			break;
+		case RobustFctId::EMICP:
+			aboveThres = (1/(e2.sqrt()));
+			w = (e2.sqrt() >= 3).select(aboveThres,0);
+			break;
 		default:
 			break;
 	}

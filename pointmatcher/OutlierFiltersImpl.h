@@ -257,7 +257,12 @@ struct OutlierFiltersImpl
 			Tukey=4,
 			Huber=5,
 			L1=6,
-			Student=7
+			Student=7,
+			SparseICP=8,
+			Fair=9,
+			Logistic=10,
+			Andrew=11,
+			EMICP=12
 		};
 		typedef std::map<std::string, RobustFctId> RobustFctMap;
 		static RobustFctMap robustFcts;
