@@ -182,11 +182,11 @@ T OutlierFiltersImpl<T>::VarTrimmedDistOutlierFilter::optimizeInlierRatio(const 
 	typedef typename PointMatcher<T>::ConvergenceError ConvergenceError;
 	typedef typename Eigen::Array<T, Eigen::Dynamic, 1> LineArray;
 
-	const int points_nbr = matches.dists.rows() * matches.dists.cols();
+	const int total_points_nbr = matches.dists.rows() * matches.dists.cols();
 
 	// vector containing the squared distances of the matches
 	std::vector<T> tmpSortedDist;
-	tmpSortedDist.reserve(points_nbr);
+	tmpSortedDist.reserve(total_points_nbr);
 	for (int x = 0; x < matches.dists.cols(); ++x)
 		for (int y = 0; y < matches.dists.rows(); ++y)
 			if ((matches.dists(y, x) != numeric_limits<T>::infinity()) && (matches.dists(y, x) > 0))
@@ -195,26 +195,32 @@ T OutlierFiltersImpl<T>::VarTrimmedDistOutlierFilter::optimizeInlierRatio(const 
 		throw ConvergenceError("Inlier ratio optimization failed due to absence of matches");
 
 	std::sort(tmpSortedDist.begin(), tmpSortedDist.end());
-	std::vector<T> tmpCumSumSortedDist;
-	tmpCumSumSortedDist.reserve(points_nbr);
+	const int points_nbr = tmpSortedDist.size();
+
+	std::vector<T> tmpCumSumSortedDist(points_nbr);
 	std::partial_sum(tmpSortedDist.begin(), tmpSortedDist.end(), tmpCumSumSortedDist.begin());
 
 	const int minEl = floor(this->minRatio*points_nbr);
 	const int maxEl = floor(this->maxRatio*points_nbr);
 
+	if (maxEl <= minEl)
+	{
+		return this->minRatio;
+	}
+
 	// Return std::vector to an eigen::vector
-	Eigen::Map<LineArray> sortedDist(&tmpCumSumSortedDist[0], points_nbr);
+	Eigen::Map<const LineArray> sortedDist(tmpCumSumSortedDist.data(), points_nbr);
 
 	const LineArray trunkSortedDist = sortedDist.segment(minEl, maxEl-minEl);
 
 	const LineArray ids = LineArray::LinSpaced(trunkSortedDist.rows(), minEl+1, maxEl);
-	const LineArray ratio = ids / points_nbr; // ratio for each of element between minEl and maxEl
+	const LineArray ratio = ids / static_cast<T>(points_nbr); // ratio for each of element between minEl and maxEl
 	const LineArray deno = ratio.pow(this->lambda); // f^λ
 	// frms = cumSumDists[minEl:maxEl] / id / (f^λ)²
 	const LineArray FRMS = trunkSortedDist * ids.inverse() * deno.inverse().square() ;
 	int minIndex(0);// = FRMS.minCoeff();
 	FRMS.minCoeff(&minIndex);
-	const T optRatio = (float)(minIndex + minEl)/ (float)points_nbr;
+	const T optRatio = static_cast<T>(minIndex + minEl) / static_cast<T>(points_nbr);
 
 	return optRatio;
 }
